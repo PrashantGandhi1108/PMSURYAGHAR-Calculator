@@ -18,6 +18,11 @@ button {padding:10px;background:#1565c0;color:#fff;border:none;}
 table {width:100%;border-collapse:collapse;margin-top:15px;}
 th,td {border:1px solid #ccc;padding:5px;font-size:11px;text-align:center;}
 .links {text-align:center;margin:10px;}
+<div style="display:flex; align-items:center; justify-content:space-between;">
+  <img src="dgvcl_logo.png" style="height:60px;">
+  <h2>PM SURYAGHAR MBY: Loan EMI Calculator</h2>
+  <img src="dgvcl_logo.png" style="height:60px;">
+</div>  
 </style>
 </head>
 
@@ -168,6 +173,7 @@ datasets:[{data:[loan,interest]}]
 }
 
 async function downloadPDF(){
+alert("New PDF function running");   // 👈 ADD THIS LINE
 
 const {jsPDF}=window.jspdf;
 let doc=new jsPDF();
@@ -179,9 +185,17 @@ doc.text("EMI: "+document.getElementById('emi').innerText,20,40);
 let y=50;
 
 scheduleData.forEach((row,i)=>{
-if(i%25==0 && i!=0){doc.addPage();y=20;}
-doc.text(row.map(x=>Math.round(x)).join(" | "),10,y);
-y+=5;
+if (y > 270) {   // page height limit
+    doc.addPage();
+    y = 20;
+}
+doc.text(
+        `${row[0]}    ${Math.round(row[1])}    ${Math.round(row[2])}    ${Math.round(row[3])}    ${Math.round(row[4])}    ${Math.round(row[5])}`,
+        10,
+        y
+    );
+
+    y += 5;
 });
 
 doc.addPage();
