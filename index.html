@@ -9,98 +9,35 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
-body {
-  font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg, #e3f2fd, #ffffff);
-  margin:0;
-}
-
-.container {
-  max-width:1100px;
-  margin:auto;
-  padding:15px;
-}
+body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg,#e3f2fd,#fff); margin:0; }
+.container { max-width:1100px; margin:auto; padding:15px; }
 
 .header {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  background:#1565c0;
-  color:white;
-  padding:12px;
-  border-radius:10px;
-  margin-bottom:15px;
+display:flex; justify-content:space-between; align-items:center;
+background:#1565c0; color:white; padding:12px; border-radius:10px;
 }
 
-.logo { height:45px; }
-
-.grid {
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:15px;
-}
+.grid { display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-top:15px; }
 
 .card {
-  background:white;
-  padding:20px;
-  border-radius:12px;
-  box-shadow:0 6px 20px rgba(0,0,0,0.1);
+background:white; padding:20px; border-radius:12px;
+box-shadow:0 6px 20px rgba(0,0,0,0.1);
 }
 
-.form-group { margin-bottom:12px; }
-
-label { font-weight:bold; }
-
-input {
-  width:100%;
-  padding:10px;
-  border-radius:6px;
-  border:1px solid #ccc;
-}
+input { width:100%; padding:10px; margin-bottom:10px; border-radius:6px; border:1px solid #ccc; }
 
 button {
-  width:100%;
-  padding:12px;
-  margin-top:8px;
-  background:linear-gradient(45deg,#1565c0,#42a5f5);
-  color:white;
-  border:none;
-  border-radius:6px;
-  cursor:pointer;
+width:100%; padding:12px; margin-top:8px;
+background:linear-gradient(45deg,#1565c0,#42a5f5);
+color:white; border:none; border-radius:6px; cursor:pointer;
 }
 
-.metric {
-  display:flex;
-  justify-content:space-between;
-  padding:8px 0;
-  border-bottom:1px solid #ddd;
-}
-
-.chart-box {
-  max-width:260px;
-  margin:20px auto;
-}
-
-table {
-  width:100%;
-  border-collapse:collapse;
-  margin-top:15px;
-  font-size:12px;
-}
-
-th, td {
-  border:1px solid #ccc;
-  padding:6px;
-  text-align:center;
-}
-
-th {
-  background:#1565c0;
-  color:white;
-}
+table { width:100%; border-collapse:collapse; margin-top:15px; }
+th,td { border:1px solid #ccc; padding:6px; text-align:center; }
+th { background:#1565c0; color:white; }
 
 @media(max-width:768px){
-  .grid { grid-template-columns:1fr; }
+.grid { grid-template-columns:1fr; }
 }
 </style>
 </head>
@@ -110,33 +47,28 @@ th {
 <div class="container">
 
 <div class="header">
-  <img src="dgvcl_logo.png" class="logo">
-  <h3>PM SURYAGHAR MBY - EMI Calculator</h3>
-  <img src="dgvcl_logo.png" class="logo">
+<h3>PM SURYAGHAR MBY - EMI Calculator</h3>
 </div>
 
 <div class="grid">
 
 <div class="card">
 <h3>Inputs</h3>
-
-<div class="form-group"><label>Name</label><input id="name"></div>
-<div class="form-group"><label>Capacity (kW)</label><input id="capacity" oninput="autoSubsidy()"></div>
-<div class="form-group"><label>Cost</label><input id="cost"></div>
-<div class="form-group"><label>Subsidy</label><input id="subsidy" readonly></div>
-<div class="form-group"><label>Interest %</label><input id="rate"></div>
-<div class="form-group"><label>Tenure (Years)</label><input id="tenure"></div>
-
+<input id="name" placeholder="Applicant Name">
+<input id="capacity" placeholder="Capacity (kW)" oninput="autoSubsidy()">
+<input id="cost" placeholder="Cost">
+<input id="subsidy" placeholder="Subsidy" readonly>
+<input id="rate" placeholder="Interest %">
+<input id="tenure" placeholder="Tenure (Years)">
 <button onclick="calculate()">Calculate</button>
 </div>
 
 <div class="card">
 <h3>Summary</h3>
-<div class="metric"><span>Loan</span><b id="loan"></b></div>
-<div class="metric"><span>EMI</span><b id="emi"></b></div>
-<div class="metric"><span>Interest</span><b id="interest"></b></div>
-
-<div class="chart-box"><canvas id="chart"></canvas></div>
+<div>Loan: <b id="loan"></b></div>
+<div>EMI: <b id="emi"></b></div>
+<div>Interest: <b id="interest"></b></div>
+<canvas id="chart"></canvas>
 </div>
 
 </div>
@@ -147,7 +79,7 @@ th {
 <table>
 <thead>
 <tr>
-<th>Month</th><th>Opening</th><th>EMI</th><th>Interest</th><th>Principal</th><th>Closing</th>
+<th>M</th><th>Opening</th><th>EMI</th><th>Interest</th><th>Principal</th><th>Closing</th>
 </tr>
 </thead>
 <tbody id="table"></tbody>
@@ -166,8 +98,9 @@ th {
 let scheduleData=[];
 
 function autoSubsidy(){
-let cap=+capacity.value||0;
-subsidy.value=cap<=2?cap*30000:cap<=3?60000+(cap-2)*18000:78000;
+let cap=Number(document.getElementById("capacity").value)||0;
+document.getElementById("subsidy").value =
+cap<=2?cap*30000:cap<=3?60000+(cap-2)*18000:78000;
 }
 
 function emiCalc(P,r,n){
@@ -176,18 +109,18 @@ return P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);
 
 function calculate(){
 
-let costVal=+cost.value;
-let sub=+subsidy.value;
-let r=(+rate.value)/12/100;
-let n=(+tenure.value)*12;
+let cost=Number(document.getElementById("cost").value);
+let sub=Number(document.getElementById("subsidy").value);
+let r=Number(document.getElementById("rate").value)/12/100;
+let n=Number(document.getElementById("tenure").value)*12;
 
-let emiBefore=emiCalc(costVal,r,n);
+let emiBefore=emiCalc(cost,r,n);
 
-let balance=costVal;
+let balance=cost;
 let emiAfter=emiBefore;
 
 scheduleData=[];
-let table="";
+let html="";
 
 for(let i=1;i<=n;i++){
 
@@ -197,7 +130,6 @@ emiAfter=emiCalc(balance,r,n-2);
 }
 
 let emi=i<=2?emiBefore:emiAfter;
-
 let interest=balance*r;
 let principal=emi-interest;
 let closing=balance-principal;
@@ -210,7 +142,7 @@ closing=0;
 
 scheduleData.push([i,balance,emi,interest,principal,closing]);
 
-table+=`<tr>
+html+=`<tr>
 <td>${i}</td>
 <td>${Math.round(balance)}</td>
 <td>${Math.round(emi)}</td>
@@ -222,26 +154,23 @@ table+=`<tr>
 balance=closing;
 }
 
-loan.innerText=Math.round(costVal);
-emi.innerText=Math.round(emiAfter);
-interest.innerText=Math.round(scheduleData.reduce((a,b)=>a+b[3],0));
+document.getElementById("loan").innerText=Math.round(cost);
+document.getElementById("emi").innerText=Math.round(emiAfter);
+document.getElementById("interest").innerText=Math.round(scheduleData.reduce((a,b)=>a+b[3],0));
+document.getElementById("table").innerHTML=html;
 
-document.getElementById("table").innerHTML=table;
-
-drawChart(costVal);
+drawChart(cost);
 }
 
-function drawChart(loanVal){
-let interestVal=scheduleData.reduce((a,b)=>a+b[3],0);
-if(window.chartObj) chartObj.destroy();
+function drawChart(loan){
+let interest=scheduleData.reduce((a,b)=>a+b[3],0);
 
-chartObj=new Chart(chart,{
+new Chart(document.getElementById("chart"),{
 type:'pie',
-data:{labels:['Principal','Interest'],datasets:[{data:[loanVal,interestVal]}]}
+data:{labels:['Principal','Interest'],datasets:[{data:[loan,interest]}]}
 });
 }
 
-/* ✅ PREMIUM PDF */
 function downloadPDF(){
 
 if(scheduleData.length===0){
@@ -249,61 +178,62 @@ alert("Please calculate first");
 return;
 }
 
-const {jsPDF}=window.jspdf;
-let doc=new jsPDF();
+// ✅ CORRECT INITIALIZATION
+const doc = new window.jspdf.jsPDF();
 
-doc.setFont("helvetica","normal");
+let nameVal = document.getElementById("name").value || "NA";
+let loanVal = document.getElementById("loan").innerText;
+let emiVal = document.getElementById("emi").innerText;
+let intVal = document.getElementById("interest").innerText;
+
+let now = new Date().toLocaleString();
 
 // HEADER
+doc.setFont("helvetica","normal");
 doc.setFontSize(14);
-doc.text("PM SURYAGHAR MBY - LOAN STATEMENT",105,15,null,null,"center");
+doc.text("PM SURYAGHAR LOAN STATEMENT",105,15,null,null,"center");
 
-// USER DATA
+// DETAILS
 doc.setFontSize(10);
-let applicantName = document.getElementById("name").value || "NA";
-doc.text("Name: " + applicantName, 15, 25);
-doc.text("Loan: Rs. " + loanVal, 15, 32);
-doc.text("EMI: Rs. " + emiVal, 15, 39);
-doc.text("Total Interest: Rs. " + interestVal, 15, 46);
+doc.text("Name: "+nameVal,15,25);
+doc.text("Loan: Rs. "+loanVal,15,32);
+doc.text("EMI: Rs. "+emiVal,15,39);
+doc.text("Interest: Rs. "+intVal,15,46);
+doc.text("Generated: "+now,15,53);
 
-// TABLE HEADER
-let y=55;
-doc.setFillColor(220,220,220);
-doc.rect(10,y-5,190,6,'F');
+// TABLE
+let y=60;
+doc.setFontSize(8);
 
-doc.text("M",12,y);
-doc.text("Opening",30,y);
-doc.text("EMI",65,y);
-doc.text("Interest",95,y);
-doc.text("Principal",125,y);
-doc.text("Closing",160,y);
+doc.text("M",10,y);
+doc.text("Opening",25,y);
+doc.text("EMI",55,y);
+doc.text("Interest",80,y);
+doc.text("Principal",110,y);
+doc.text("Closing",140,y);
 
 y+=5;
 
-// TABLE DATA
-scheduleData.forEach(row=>{
+scheduleData.forEach(r=>{
 
 if(y>280){
 doc.addPage();
 y=20;
 }
 
-doc.rect(10,y-4,190,6);
+doc.text(String(r[0]),10,y);
+doc.text("Rs."+Math.round(r[1]),25,y);
+doc.text("Rs."+Math.round(r[2]),55,y);
+doc.text("Rs."+Math.round(r[3]),80,y);
+doc.text("Rs."+Math.round(r[4]),110,y);
+doc.text("Rs."+Math.round(r[5]),140,y);
 
-doc.text(String(row[0]),12,y);
-doc.text(String(Math.round(row[1])),30,y);
-doc.text(String(Math.round(row[2])),65,y);
-doc.text(String(Math.round(row[3])),95,y);
-doc.text(String(Math.round(row[4])),125,y);
-doc.text(String(Math.round(row[5])),160,y);
-
-y+=6;
+y+=5;
 });
 
 doc.save("Loan_Statement.pdf");
 }
 
-/* ✅ EXCEL */
 function exportExcel(){
 let csv="Month,Opening,EMI,Interest,Principal,Closing\n";
 scheduleData.forEach(r=>csv+=r.join(",")+"\n");
