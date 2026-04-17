@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PM SURYAGHAR MBY: Loan EMI Calculator</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+body {font-family: Arial; background:#eef5ff;}
+.container {max-width:1000px;margin:auto;padding:20px;}
+.header {text-align:center;}
+.card {background:#fff;padding:20px;border-radius:10px;}
+input {width:100%;padding:8px;margin:5px 0;}
+button {padding:10px;background:#1565c0;color:#fff;border:none;}
+table {width:100%;border-collapse:collapse;margin-top:15px;}
+th,td {border:1px solid #ccc;padding:5px;font-size:11px;text-align:center;}
+.links {text-align:center;margin:10px;}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<div class="header">
+<h2>PM SURYAGHAR MBY: Loan EMI Calculator</h2>
+</div>
+
+<div class="links">
+<a href="https://www.jansamarth.in/home" target="_blank">Apply Loan (JanSamarth)</a> |
+<a href="https://consumer.pmsuryaghar.gov.in/consumer/#/login" target="_blank">PM SuryaGhar Portal</a>
+</div>
+
+<div class="card">
+
+<label>Applicant Name</label>
+<input id="name">
+
+<label>Solar Capacity (kW)</label>
+<input id="capacity" oninput="autoSubsidy()">
+
+<label>Total Project Cost (₹)</label>
+<input id="cost">
+
+<label>Subsidy (₹)</label>
+<input id="subsidy" readonly>
+
+<label>Interest Rate (%)</label>
+<input id="rate">
+
+<label>Tenure (Years)</label>
+<input id="tenure">
+
+<button onclick="calculate()">Calculate</button>
+
+<p><b>Loan:</b> ₹<span id="loan"></span></p>
+<p><b>Revised EMI:</b> ₹<span id="emi"></span></p>
+<p><b>Total Interest:</b> ₹<span id="interest"></span></p>
+
+<canvas id="chart"></canvas>
+
+<h3>EMI Schedule</h3>
+<table>
+<thead>
+<tr>
+<th>Month</th><th>Opening</th><th>EMI</th><th>Interest</th><th>Principal</th><th>Closing</th>
+</tr>
+</thead>
+<tbody id="table"></tbody>
+</table>
+
+<button onclick="downloadPDF()">Download PDF</button>
+
+</div>
+</div>
+
+<script>
+
+let scheduleData=[];
+
+function autoSubsidy(){
+let cap = parseFloat(document.getElementById('capacity').value)||0;
+let sub=0;
+
+if(cap<=2) sub=cap*30000;
+else if(cap<=3) sub=60000+(cap-2)*18000;
+else sub=78000;
+
+document.getElementById('subsidy').value=sub;
+}
+
+function emiCalc(P,r,n){
+return P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);
+}
+
+function calculate(){
+
+let cost=+document.getElementById('cost').value;
+let sub=+document.getElementById('subsidy').value;
+let r=(+document.getElementById('rate').value)/12/100;
+let n=(+document.getElementById('tenure').value)*12;
+
+let emiBefore=emiCalc(cost,r,n);
+
+let balance=cost;
+let emiAfter=emiBefore;
+
+scheduleData=[];
+let table="";
+
+for(let i=1;i<=n;i++){
+
+if(i==3){
+balance -= sub;
+emiAfter = emiCalc(balance, r, n-2);
+}
+
+let emi=(i<=2)?emiBefore:emiAfter;
+
+let interest=balance*r;
+let principal=emi-interest;
+let closing=balance-principal;
+
+// Fix rounding issue at last month
+if(i===n){
+principal=balance;
+emi=interest+principal;
+closing=0;
+}
+
+scheduleData.push([i,balance,emi,interest,principal,closing]);
+
+table+=`<tr>
+<td>${i}</td>
+<td>${balance.toFixed(0)}</td>
+<td>${emi.toFixed(0)}</td>
+<td>${interest.toFixed(0)}</td>
+<td>${principal.toFixed(0)}</td>
+<td>${closing.toFixed(0)}</td>
+</tr>`;
+
+balance=closing;
+}
+
+document.getElementById('loan').innerText=cost.toFixed(0);
+document.getElementById('emi').innerText=emiAfter.toFixed(0);
+document.getElementById('interest').innerText=
+scheduleData.reduce((a,b)=>a+b[3],0).toFixed(0);
+
+document.getElementById('table').innerHTML=table;
+
+drawChart(cost);
+}
+
+function drawChart(loan){
+let interest=scheduleData.reduce((a,b)=>a+b[3],0);
+
+new Chart(document.getElementById('chart'),{
+type:'pie',
+data:{
+labels:['Principal','Interest'],
+datasets:[{data:[loan,interest]}]
+}
+});
+}
+
+async function downloadPDF(){
+
+const {jsPDF}=window.jspdf;
+let doc=new jsPDF();
+
+doc.text("PM SURYAGHAR Loan Statement",20,20);
+doc.text("Loan: "+document.getElementById('loan').innerText,20,30);
+doc.text("EMI: "+document.getElementById('emi').innerText,20,40);
+
+let y=50;
+
+scheduleData.forEach((row,i)=>{
+if(i%25==0 && i!=0){doc.addPage();y=20;}
+doc.text(row.map(x=>Math.round(x)).join(" | "),10,y);
+y+=5;
+});
+
+doc.addPage();
+doc.text("* This is indicative illustration. Actual may vary.",20,20);
+
+doc.save("Loan.pdf");
+}
+
+</script>
+
+</body>
+</html>
