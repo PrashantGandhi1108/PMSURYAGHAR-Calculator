@@ -34,8 +34,6 @@ body {
 
 .logo { height:45px; }
 
-.title { text-align:center; }
-
 .grid {
   display:grid;
   grid-template-columns:1fr 1fr;
@@ -49,15 +47,9 @@ body {
   box-shadow:0 6px 20px rgba(0,0,0,0.1);
 }
 
-.form-group {
-  margin-bottom:12px;
-}
+.form-group { margin-bottom:12px; }
 
-label {
-  font-weight:bold;
-  display:block;
-  margin-bottom:4px;
-}
+label { font-weight:bold; display:block; }
 
 input {
   width:100%;
@@ -106,25 +98,9 @@ th {
   color:white;
 }
 
-/* ✅ MOBILE RESPONSIVE */
+/* Mobile */
 @media(max-width:768px){
-  .grid {
-    grid-template-columns:1fr;
-  }
-
-  .header {
-    flex-direction:column;
-    text-align:center;
-    gap:10px;
-  }
-
-  .logo {
-    height:40px;
-  }
-
-  .chart-box {
-    max-width:220px;
-  }
+  .grid { grid-template-columns:1fr; }
 }
 </style>
 </head>
@@ -135,69 +111,38 @@ th {
 
 <div class="header">
   <img src="dgvcl_logo.png" class="logo">
-  <div class="title">
-    <h3>PM SURYAGHAR MBY</h3>
-    <p>Loan EMI Calculator</p>
-  </div>
+  <h3>PM SURYAGHAR MBY - EMI Calculator</h3>
   <img src="dgvcl_logo.png" class="logo">
 </div>
 
 <div class="grid">
 
 <div class="card">
-<h3>Applicant Details</h3>
+<h3>Inputs</h3>
 
-<div class="form-group">
-<label>Name</label>
-<input id="name">
-</div>
-
-<div class="form-group">
-<label>Capacity (kW)</label>
-<input id="capacity" oninput="autoSubsidy()">
-</div>
-
-<div class="form-group">
-<label>Cost (₹)</label>
-<input id="cost">
-</div>
-
-<div class="form-group">
-<label>Subsidy</label>
-<input id="subsidy" readonly>
-</div>
-
-<div class="form-group">
-<label>Interest (%)</label>
-<input id="rate">
-</div>
-
-<div class="form-group">
-<label>Tenure (Years)</label>
-<input id="tenure">
-</div>
+<div class="form-group"><label>Name</label><input id="name"></div>
+<div class="form-group"><label>Capacity</label><input id="capacity" oninput="autoSubsidy()"></div>
+<div class="form-group"><label>Cost</label><input id="cost"></div>
+<div class="form-group"><label>Subsidy</label><input id="subsidy" readonly></div>
+<div class="form-group"><label>Interest %</label><input id="rate"></div>
+<div class="form-group"><label>Tenure (Years)</label><input id="tenure"></div>
 
 <button onclick="calculate()">Calculate</button>
 </div>
 
 <div class="card">
 <h3>Summary</h3>
+<div class="metric"><span>Loan</span><b id="loan"></b></div>
+<div class="metric"><span>EMI</span><b id="emi"></b></div>
+<div class="metric"><span>Interest</span><b id="interest"></b></div>
 
-<div class="metric"><span>Loan</span><b>₹ <span id="loan"></span></b></div>
-<div class="metric"><span>EMI</span><b>₹ <span id="emi"></span></b></div>
-<div class="metric"><span>Interest</span><b>₹ <span id="interest"></span></b></div>
-
-<div class="chart-box">
-<canvas id="chart"></canvas>
-</div>
-
+<div class="chart-box"><canvas id="chart"></canvas></div>
 </div>
 
 </div>
 
 <div class="card">
 <h3>EMI Schedule</h3>
-
 <table>
 <thead>
 <tr>
@@ -208,21 +153,17 @@ th {
 </table>
 
 <button onclick="downloadPDF()">Download PDF</button>
-<button onclick="window.print()">Print</button>
-<button onclick="exportExcel()">Export Excel</button>
-
 </div>
 
 </div>
 
 <script>
 
-let scheduleData=[];
+let scheduleData = [];
 
 function autoSubsidy(){
-let cap = +document.getElementById('capacity').value || 0;
-let sub = cap<=2 ? cap*30000 : cap<=3 ? 60000+(cap-2)*18000 : 78000;
-document.getElementById('subsidy').value = sub;
+let cap = +capacity.value || 0;
+subsidy.value = cap<=2 ? cap*30000 : cap<=3 ? 60000+(cap-2)*18000 : 78000;
 }
 
 function emiCalc(P,r,n){
@@ -231,23 +172,18 @@ return P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);
 
 function calculate(){
 
-let costVal = +document.getElementById('cost').value;
-let sub = +document.getElementById('subsidy').value;
-let r = (+document.getElementById('rate').value)/12/100;
-let n = (+document.getElementById('tenure').value)*12;
-
-if(!costVal || !r || !n){
-  alert("Please fill all fields correctly");
-  return;
-}
+let costVal = +cost.value;
+let sub = +subsidy.value;
+let r = (+rate.value)/12/100;
+let n = (+tenure.value)*12;
 
 let emiBefore = emiCalc(costVal,r,n);
 
 let balance = costVal;
 let emiAfter = emiBefore;
 
-scheduleData=[];
-let table="";
+scheduleData = [];
+let table = "";
 
 for(let i=1;i<=n;i++){
 
@@ -257,7 +193,6 @@ emiAfter = emiCalc(balance,r,n-2);
 }
 
 let emi = i<=2 ? emiBefore : emiAfter;
-
 let interest = balance*r;
 let principal = emi-interest;
 let closing = balance-principal;
@@ -270,7 +205,7 @@ closing=0;
 
 scheduleData.push([i,balance,emi,interest,principal,closing]);
 
-table+=`<tr ${i==3?"style='background:#fff3cd'":""}>
+table+=`<tr>
 <td>${i}</td>
 <td>${Math.round(balance)}</td>
 <td>${Math.round(emi)}</td>
@@ -282,117 +217,73 @@ table+=`<tr ${i==3?"style='background:#fff3cd'":""}>
 balance=closing;
 }
 
-document.getElementById('loan').innerText=Math.round(costVal);
-document.getElementById('emi').innerText=Math.round(emiAfter);
-document.getElementById('interest').innerText=Math.round(scheduleData.reduce((a,b)=>a+b[3],0));
+loan.innerText = Math.round(costVal);
+emi.innerText = Math.round(emiAfter);
+interest.innerText = Math.round(scheduleData.reduce((a,b)=>a+b[3],0));
+
+document.getElementById("table").innerHTML = table;
 
 drawChart(costVal);
-document.getElementById('table').innerHTML=table;
 }
 
-function drawChart(loan){
-let interest = scheduleData.reduce((a,b)=>a+b[3],0);
+function drawChart(loanVal){
+let interestVal = scheduleData.reduce((a,b)=>a+b[3],0);
 
-if(window.chartObj){ chartObj.destroy(); }
+if(window.chartObj) chartObj.destroy();
 
-window.chartObj = new Chart(document.getElementById('chart'),{
+chartObj = new Chart(chart,{
 type:'pie',
-data:{labels:['Principal','Interest'],datasets:[{data:[loan,interest]}]}
+data:{labels:['Principal','Interest'],datasets:[{data:[loanVal,interestVal]}]}
 });
 }
 
 function downloadPDF(){
 
+if(scheduleData.length === 0){
+alert("Please calculate first");
+return;
+}
+
 const {jsPDF}=window.jspdf;
 let doc=new jsPDF();
 
 doc.setFont("helvetica","normal");
+doc.setFontSize(12);
 
-// ===== TITLE =====
-doc.setFontSize(14);
-doc.text("PM SURYAGHAR MBY: LOAN STATEMENT", 105, 15, null, null, "center");
+doc.text("PM SURYAGHAR LOAN STATEMENT", 70, 15);
 
-// ===== SUMMARY =====
-doc.setFontSize(10);
+let y = 25;
 
-let name = document.getElementById('name').value || "NA";
-let loan = document.getElementById('loan').innerText;
-let emi = document.getElementById('emi').innerText;
-let interest = document.getElementById('interest').innerText;
+// Header Row
+doc.setFontSize(8);
+doc.text("M",10,y);
+doc.text("Opening",25,y);
+doc.text("EMI",55,y);
+doc.text("Interest",80,y);
+doc.text("Principal",110,y);
+doc.text("Closing",140,y);
 
-doc.text("Applicant: " + name, 15, 25);
-doc.text("Loan Amount: Rs. " + loan, 15, 32);
-doc.text("EMI: Rs. " + emi, 15, 39);
-doc.text("Total Interest: Rs. " + interest, 15, 46);
+y+=5;
 
-// ===== TABLE HEADER FUNCTION =====
-let startY = 55;
-let rowHeight = 6;
+// Data
+scheduleData.forEach((r)=>{
 
-function drawHeader(y){
-doc.setFillColor(220,220,220);
-doc.rect(10, y-5, 190, 6, 'F');
-
-doc.text("M", 12, y);
-doc.text("Opening", 30, y);
-doc.text("EMI", 65, y);
-doc.text("Interest", 95, y);
-doc.text("Principal", 125, y);
-doc.text("Closing", 160, y);
-}
-
-drawHeader(startY);
-
-let y = startY + 5;
-
-// ===== TABLE DATA =====
-scheduleData.forEach((row)=>{
-
-// PAGE BREAK
-if(y > 280){
+if(y>280){
 doc.addPage();
-drawHeader(20);
-y = 25;
+y=20;
 }
 
-// HIGHLIGHT SUBSIDY ROW
-if(row[0] == 3){
-doc.setFillColor(255,243,205);
-doc.rect(10, y-4, 190, rowHeight, 'F');
-}
+doc.text(String(r[0]),10,y);
+doc.text(String(Math.round(r[1])),25,y);
+doc.text(String(Math.round(r[2])),55,y);
+doc.text(String(Math.round(r[3])),80,y);
+doc.text(String(Math.round(r[4])),110,y);
+doc.text(String(Math.round(r[5])),140,y);
 
-// BORDER
-doc.rect(10, y-4, 190, rowHeight);
-
-// DATA
-doc.text(String(row[0]), 12, y);
-doc.text(String(Math.round(row[1])), 30, y);
-doc.text(String(Math.round(row[2])), 65, y);
-doc.text(String(Math.round(row[3])), 95, y);
-doc.text(String(Math.round(row[4])), 125, y);
-doc.text(String(Math.round(row[5])), 160, y);
-
-y += rowHeight;
+y+=5;
 });
 
-// ===== FOOTER =====
-doc.setFontSize(8);
-doc.text("* This is indicative illustration. Actual may vary.", 15, 290);
-
-// ===== SAVE =====
-doc.save("PM_Suryaghar_Loan_Report.pdf");
-
-}
-
-function exportExcel(){
-let csv="Month,Opening,EMI,Interest,Principal,Closing\n";
-scheduleData.forEach(r=>csv+=r.join(",")+"\n");
-
-let blob=new Blob([csv],{type:"text/csv"});
-let a=document.createElement("a");
-a.href=URL.createObjectURL(blob);
-a.download="emi_schedule.csv";
-a.click();
+doc.save("Loan_Statement.pdf");
 }
 
 </script>
