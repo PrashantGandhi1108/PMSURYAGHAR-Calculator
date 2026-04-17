@@ -10,39 +10,33 @@
 
 <style>
 body {font-family: Arial; background:#eef5ff;}
-.container {max-width:1000px;margin:auto;padding:20px;}
-.header {text-align:center;}
+.container {max-width:1100px;margin:auto;padding:20px;}
 .card {background:#fff;padding:20px;border-radius:10px;}
 input {width:100%;padding:8px;margin:5px 0;}
 button {padding:10px;background:#1565c0;color:#fff;border:none;}
 table {width:100%;border-collapse:collapse;margin-top:15px;}
-th,td {border:1px solid #ccc;padding:5px;font-size:11px;text-align:center;}
+th,td {border:1px solid #ccc;padding:6px;font-size:12px;text-align:center;}
+th {background:#e3f2fd;}
 .links {text-align:center;margin:10px;}
-<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:15px;">
-  
-  <img src="dgvcl_logo.png" style="height:60px; width:auto;">
-  
-  <h2 style="text-align:center; flex:1; margin:0;">
-    PM SURYAGHAR MBY: Loan EMI Calculator
-  </h2>
-  
-  <img src="dgvcl_logo.png" style="height:60px; width:auto;">
-  
-</div>
 </style>
 </head>
 
 <body>
 <div class="container">
 
-<div class="header">
-<h2>PM SURYAGHAR MBY: Loan EMI Calculator</h2>
+<!-- HEADER -->
+<div style="display:flex; align-items:center; justify-content:space-between; border-bottom:2px solid #1565c0; padding-bottom:10px; margin-bottom:15px;">
+  <img src="dgvcl_logo.png" style="height:25px;">
+  <div style="text-align:center;">
+    <h2 style="margin:0; color:#0d47a1;">PM SURYAGHAR MBY</h2>
+    <h3 style="margin:0;">Loan EMI Calculator</h3>
+  </div>
+  <img src="dgvcl_logo.png" style="height:25px;">
 </div>
 
 <div class="links">
-<a href="https://www.jansamarth.in/home" target="_blank">Apply Loan (JanSamarth)</a> |
+<a href="https://www.jansamarth.in/home" target="_blank">Apply Loan</a> |
 <a href="https://consumer.pmsuryaghar.gov.in/consumer/#/login" target="_blank">PM SuryaGhar Portal</a>
-<img src="dgvcl_logo.png">  
 </div>
 
 <div class="card">
@@ -68,7 +62,7 @@ th,td {border:1px solid #ccc;padding:5px;font-size:11px;text-align:center;}
 <button onclick="calculate()">Calculate</button>
 
 <p><b>Loan:</b> ₹<span id="loan"></span></p>
-<p><b>Revised EMI after subsidy disbursment:</b> ₹<span id="emi"></span></p>
+<p><b>Revised EMI:</b> ₹<span id="emi"></span></p>
 <p><b>Total Interest:</b> ₹<span id="interest"></span></p>
 
 <canvas id="chart"></canvas>
@@ -135,7 +129,7 @@ let interest=balance*r;
 let principal=emi-interest;
 let closing=balance-principal;
 
-// Fix rounding issue at last month
+// final month correction
 if(i===n){
 principal=balance;
 emi=interest+principal;
@@ -144,26 +138,40 @@ closing=0;
 
 scheduleData.push([i,balance,emi,interest,principal,closing]);
 
-table+=`<tr>
+let highlight = (i==3) ? "style='background:#fff3cd; font-weight:bold;'" : "";
+
+table+=`<tr ${highlight}>
 <td>${i}</td>
-<td>${balance.toFixed(0)}</td>
-<td>${emi.toFixed(0)}</td>
-<td>${interest.toFixed(0)}</td>
-<td>${principal.toFixed(0)}</td>
-<td>${closing.toFixed(0)}</td>
+<td>${Math.round(balance).toLocaleString()}</td>
+<td>${Math.round(emi).toLocaleString()}</td>
+<td>${Math.round(interest).toLocaleString()}</td>
+<td>${Math.round(principal).toLocaleString()}</td>
+<td>${Math.round(closing).toLocaleString()}</td>
 </tr>`;
 
 balance=closing;
 }
 
-document.getElementById('loan').innerText=cost.toFixed(0);
-document.getElementById('emi').innerText=emiAfter.toFixed(0);
+document.getElementById('loan').innerText=Math.round(cost).toLocaleString();
+document.getElementById('emi').innerText=Math.round(emiAfter).toLocaleString();
 document.getElementById('interest').innerText=
-scheduleData.reduce((a,b)=>a+b[3],0).toFixed(0);
+Math.round(scheduleData.reduce((a,b)=>a+b[3],0)).toLocaleString();
 
 document.getElementById('table').innerHTML=table;
 
 drawChart(cost);
+}
+
+function drawChart(loan){
+let interest=scheduleData.reduce((a,b)=>a+b[3],0);
+
+new Chart(document.getElementById('chart'),{
+type:'pie',
+data:{
+labels:['Principal','Interest'],
+datasets:[{data:[loan,interest]}]
+}
+});
 }
 
 async function downloadPDF(){
@@ -171,35 +179,38 @@ async function downloadPDF(){
 const {jsPDF}=window.jspdf;
 let doc=new jsPDF();
 
-// Fetch values
+// LOGO
+let img = new Image();
+img.src = "dgvcl_logo.png";
+doc.addImage(img, 'PNG', 10, 10, 30, 15);
+doc.addImage(img, 'PNG', 170, 10, 30, 15);
+
+// TITLE
+doc.setFontSize(14);
+doc.text("PM SURYAGHAR MBY: LOAN STATEMENT", 105, 20, null, null, "center");
+
+// DETAILS
+doc.setFontSize(10);
 let name=document.getElementById('name').value || "NA";
 let loan=document.getElementById('loan').innerText;
 let emi=document.getElementById('emi').innerText;
 let interest=document.getElementById('interest').innerText;
 
-// ===== HEADER =====
-doc.setFontSize(14);
-doc.text("PM SURYAGHAR MBY: LOAN STATEMENT", 105, 15, null, null, "center");
+doc.text("Applicant: " + name, 20, 35);
+doc.text("Loan Amount: ₹" + loan, 20, 42);
+doc.text("EMI: ₹" + emi, 20, 49);
+doc.text("Total Interest: ₹" + interest, 20, 56);
 
-// Applicant Details
-doc.setFontSize(10);
-doc.text("Applicant: " + name, 20, 25);
-doc.text("Loan Amount: ₹" + loan, 20, 32);
-doc.text("EMI: ₹" + emi, 20, 39);
-doc.text("Total Interest: ₹" + interest, 20, 46);
-
-// ===== TABLE HEADER =====
-let startY = 55;
+// TABLE
+let y = 65;
 let rowHeight = 6;
-
 let colX = [10, 30, 60, 90, 120, 150];
 
-function drawHeader(y){
-doc.setFontSize(9);
-doc.setFillColor(220,220,220);
+function header(y){
+doc.setFillColor(200,200,200);
 doc.rect(10, y-5, 190, 6, 'F');
 
-doc.text("Month", colX[0], y);
+doc.text("M", colX[0], y);
 doc.text("Opening", colX[1], y);
 doc.text("EMI", colX[2], y);
 doc.text("Interest", colX[3], y);
@@ -207,24 +218,25 @@ doc.text("Principal", colX[4], y);
 doc.text("Closing", colX[5], y);
 }
 
-drawHeader(startY);
+header(y);
+y+=5;
 
-let y = startY + 5;
-
-// ===== TABLE BODY =====
 scheduleData.forEach((row)=>{
 
-// Dynamic page break
-if(y > 280){
-    doc.addPage();
-    drawHeader(20);
-    y = 25;
+if(y>280){
+doc.addPage();
+header(20);
+y=25;
 }
 
-// Draw row borders
-doc.rect(10, y-4, 190, rowHeight);
+// highlight subsidy row
+if(row[0]==3){
+doc.setFillColor(255,243,205);
+doc.rect(10,y-4,190,rowHeight,'F');
+}
 
-// Insert values (aligned columns)
+doc.rect(10,y-4,190,rowHeight);
+
 doc.text(String(row[0]), colX[0], y);
 doc.text(String(Math.round(row[1])), colX[1], y);
 doc.text(String(Math.round(row[2])), colX[2], y);
@@ -232,10 +244,10 @@ doc.text(String(Math.round(row[3])), colX[3], y);
 doc.text(String(Math.round(row[4])), colX[4], y);
 doc.text(String(Math.round(row[5])), colX[5], y);
 
-y += rowHeight;
+y+=rowHeight;
 });
 
-// ===== CHART =====
+// CHART
 let canvas=document.getElementById('chart');
 let imgData=canvas.toDataURL("image/png");
 
@@ -243,15 +255,13 @@ doc.addPage();
 doc.text("Loan Composition", 20, 20);
 doc.addImage(imgData,'PNG',20,30,160,100);
 
-// ===== DISCLAIMER =====
+// DISCLAIMER
 doc.addPage();
 doc.setFontSize(9);
 doc.text("* This is indicative illustration. Actual may vary based on inputs and bank terms.",20,20);
 
-// SAVE
 doc.save("PM_Suryaghar_Loan_Report.pdf");
 }
-doc.addPage();
 
 </script>
 
