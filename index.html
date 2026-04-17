@@ -31,6 +31,7 @@ th,td {border:1px solid #ccc;padding:5px;font-size:11px;text-align:center;}
 <div class="links">
 <a href="https://www.jansamarth.in/home" target="_blank">Apply Loan (JanSamarth)</a> |
 <a href="https://consumer.pmsuryaghar.gov.in/consumer/#/login" target="_blank">PM SuryaGhar Portal</a>
+<img src="dgvcl_logo.png">  
 </div>
 
 <div class="card">
@@ -56,7 +57,7 @@ th,td {border:1px solid #ccc;padding:5px;font-size:11px;text-align:center;}
 <button onclick="calculate()">Calculate</button>
 
 <p><b>Loan:</b> ₹<span id="loan"></span></p>
-<p><b>Revised EMI:</b> ₹<span id="emi"></span></p>
+<p><b>Revised EMI after subsidy disbursment:</b> ₹<span id="emi"></span></p>
 <p><b>Total Interest:</b> ₹<span id="interest"></span></p>
 
 <canvas id="chart"></canvas>
@@ -184,9 +185,9 @@ y+=5;
 });
 
 doc.addPage();
-doc.text("* This is indicative illustration. Actual may vary.",20,20);
+doc.text("* This is indicative illustration. Actual computation may vary.",20,20);
 
-doc.save("Loan.pdf");
+doc.save("PMSuryagharLoanSchedule.pdf");
 }
 
 </script>
