@@ -9,35 +9,86 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
-body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg,#e3f2fd,#fff); margin:0; }
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg,#e3f2fd,#ffffff);
+  margin:0;
+}
+
 .container { max-width:1100px; margin:auto; padding:15px; }
 
 .header {
-display:flex; justify-content:space-between; align-items:center;
-background:#1565c0; color:white; padding:12px; border-radius:10px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:#1565c0;
+  color:white;
+  padding:12px;
+  border-radius:10px;
 }
 
-.grid { display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-top:15px; }
+.logo { height:50px; }
+
+.title { text-align:center; }
+
+.grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:15px;
+  margin-top:15px;
+}
 
 .card {
-background:white; padding:20px; border-radius:12px;
-box-shadow:0 6px 20px rgba(0,0,0,0.1);
+  background:white;
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 6px 20px rgba(0,0,0,0.1);
 }
 
-input { width:100%; padding:10px; margin-bottom:10px; border-radius:6px; border:1px solid #ccc; }
+.form-group { margin-bottom:12px; }
+
+label { font-weight:bold; display:block; }
+
+input {
+  width:100%;
+  padding:10px;
+  border-radius:6px;
+  border:1px solid #ccc;
+}
 
 button {
-width:100%; padding:12px; margin-top:8px;
-background:linear-gradient(45deg,#1565c0,#42a5f5);
-color:white; border:none; border-radius:6px; cursor:pointer;
+  width:100%;
+  padding:12px;
+  margin-top:8px;
+  background:linear-gradient(45deg,#1565c0,#42a5f5);
+  color:white;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
 }
 
-table { width:100%; border-collapse:collapse; margin-top:15px; }
-th,td { border:1px solid #ccc; padding:6px; text-align:center; }
-th { background:#1565c0; color:white; }
+table {
+  width:100%;
+  border-collapse:collapse;
+  margin-top:15px;
+}
 
+th, td {
+  border:1px solid #000;
+  padding:6px;
+  text-align:center;
+}
+
+th {
+  background:#1565c0;
+  color:white;
+}
+
+/* MOBILE */
 @media(max-width:768px){
-.grid { grid-template-columns:1fr; }
+  .grid { grid-template-columns:1fr; }
+  .header { flex-direction:column; gap:10px; }
+  .logo { height:40px; }
 }
 </style>
 </head>
@@ -47,27 +98,57 @@ th { background:#1565c0; color:white; }
 <div class="container">
 
 <div class="header">
-<h3>PM SURYAGHAR MBY - EMI Calculator</h3>
+  <img src="dgvcl_logo.png" class="logo">
+  <div class="title">
+    <h3>PM SURYAGHAR MBY</h3>
+    <p>Loan EMI Calculator</p>
+  </div>
+  <img src="dgvcl_logo.png" class="logo">
 </div>
 
 <div class="grid">
 
 <div class="card">
-<h3>Inputs</h3>
-<input id="name" placeholder="Applicant Name">
-<input id="capacity" placeholder="Capacity (kW)" oninput="autoSubsidy()">
-<input id="cost" placeholder="Cost">
-<input id="subsidy" placeholder="Subsidy" readonly>
-<input id="rate" placeholder="Interest %">
-<input id="tenure" placeholder="Tenure (Years)">
+<h3>Applicant Details</h3>
+
+<div class="form-group">
+<label>Name</label>
+<input id="name">
+</div>
+
+<div class="form-group">
+<label>Capacity (kW)</label>
+<input id="capacity" oninput="autoSubsidy()">
+</div>
+
+<div class="form-group">
+<label>Cost</label>
+<input id="cost">
+</div>
+
+<div class="form-group">
+<label>Subsidy</label>
+<input id="subsidy" readonly>
+</div>
+
+<div class="form-group">
+<label>Interest (%)</label>
+<input id="rate">
+</div>
+
+<div class="form-group">
+<label>Tenure (Years)</label>
+<input id="tenure">
+</div>
+
 <button onclick="calculate()">Calculate</button>
 </div>
 
 <div class="card">
 <h3>Summary</h3>
-<div>Loan: <b id="loan"></b></div>
-<div>EMI: <b id="emi"></b></div>
-<div>Interest: <b id="interest"></b></div>
+<p>Loan: ₹ <span id="loan"></span></p>
+<p>EMI: ₹ <span id="emi"></span></p>
+<p>Interest: ₹ <span id="interest"></span></p>
 <canvas id="chart"></canvas>
 </div>
 
@@ -98,9 +179,9 @@ th { background:#1565c0; color:white; }
 let scheduleData=[];
 
 function autoSubsidy(){
-let cap=Number(document.getElementById("capacity").value)||0;
-document.getElementById("subsidy").value =
-cap<=2?cap*30000:cap<=3?60000+(cap-2)*18000:78000;
+let cap=+document.getElementById("capacity").value||0;
+let sub=cap<=2?cap*30000:cap<=3?60000+(cap-2)*18000:78000;
+document.getElementById("subsidy").value=sub;
 }
 
 function emiCalc(P,r,n){
@@ -109,10 +190,10 @@ return P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);
 
 function calculate(){
 
-let cost=Number(document.getElementById("cost").value);
-let sub=Number(document.getElementById("subsidy").value);
-let r=Number(document.getElementById("rate").value)/12/100;
-let n=Number(document.getElementById("tenure").value)*12;
+let cost=+document.getElementById("cost").value;
+let sub=+document.getElementById("subsidy").value;
+let r=(+document.getElementById("rate").value)/12/100;
+let n=(+document.getElementById("tenure").value)*12;
 
 let emiBefore=emiCalc(cost,r,n);
 
@@ -157,6 +238,7 @@ balance=closing;
 document.getElementById("loan").innerText=Math.round(cost);
 document.getElementById("emi").innerText=Math.round(emiAfter);
 document.getElementById("interest").innerText=Math.round(scheduleData.reduce((a,b)=>a+b[3],0));
+
 document.getElementById("table").innerHTML=html;
 
 drawChart(cost);
@@ -171,6 +253,7 @@ data:{labels:['Principal','Interest'],datasets:[{data:[loan,interest]}]}
 });
 }
 
+/* ===== FINAL BANK STYLE PDF ===== */
 function downloadPDF(){
 
 if(scheduleData.length===0){
@@ -178,57 +261,60 @@ alert("Please calculate first");
 return;
 }
 
-// ✅ CORRECT INITIALIZATION
 const doc = new window.jspdf.jsPDF();
 
-let nameVal = document.getElementById("name").value || "NA";
-let loanVal = document.getElementById("loan").innerText;
-let emiVal = document.getElementById("emi").innerText;
-let intVal = document.getElementById("interest").innerText;
-
+let name = document.getElementById("name").value || "NA";
+let loan = document.getElementById("loan").innerText;
+let emi = document.getElementById("emi").innerText;
+let interest = document.getElementById("interest").innerText;
 let now = new Date().toLocaleString();
 
 // HEADER
-doc.setFont("helvetica","normal");
+doc.setFont("helvetica","bold");
 doc.setFontSize(14);
-doc.text("PM SURYAGHAR LOAN STATEMENT",105,15,null,null,"center");
+doc.text("PM SURYAGHAR MBY - LOAN STATEMENT",105,15,null,null,"center");
 
 // DETAILS
 doc.setFontSize(10);
-doc.text("Name: "+nameVal,15,25);
-doc.text("Loan: Rs. "+loanVal,15,32);
-doc.text("EMI: Rs. "+emiVal,15,39);
-doc.text("Interest: Rs. "+intVal,15,46);
-doc.text("Generated: "+now,15,53);
+doc.setFont("helvetica","normal");
+doc.text("Name: "+name,15,25);
+doc.text("Loan: Rs. "+loan,15,32);
+doc.text("EMI: Rs. "+emi,15,39);
+doc.text("Interest: Rs. "+interest,15,46);
+doc.text("Date: "+now,15,53);
 
-// TABLE
+// TABLE HEADER
 let y=60;
-doc.setFontSize(8);
+doc.setFillColor(200,200,200);
+doc.rect(10,y-5,190,7,"F");
 
-doc.text("M",10,y);
-doc.text("Opening",25,y);
-doc.text("EMI",55,y);
-doc.text("Interest",80,y);
-doc.text("Principal",110,y);
-doc.text("Closing",140,y);
+doc.text("M",12,y);
+doc.text("Opening",30,y);
+doc.text("EMI",65,y);
+doc.text("Interest",95,y);
+doc.text("Principal",125,y);
+doc.text("Closing",160,y);
 
-y+=5;
+y+=7;
 
-scheduleData.forEach(r=>{
+// TABLE DATA
+scheduleData.forEach(row=>{
 
 if(y>280){
 doc.addPage();
 y=20;
 }
 
-doc.text(String(r[0]),10,y);
-doc.text("Rs."+Math.round(r[1]),25,y);
-doc.text("Rs."+Math.round(r[2]),55,y);
-doc.text("Rs."+Math.round(r[3]),80,y);
-doc.text("Rs."+Math.round(r[4]),110,y);
-doc.text("Rs."+Math.round(r[5]),140,y);
+doc.rect(10,y-5,190,7); // BORDER
 
-y+=5;
+doc.text(String(row[0]),12,y);
+doc.text("Rs."+Math.round(row[1]),30,y);
+doc.text("Rs."+Math.round(row[2]),65,y);
+doc.text("Rs."+Math.round(row[3]),95,y);
+doc.text("Rs."+Math.round(row[4]),125,y);
+doc.text("Rs."+Math.round(row[5]),160,y);
+
+y+=7;
 });
 
 doc.save("Loan_Statement.pdf");
