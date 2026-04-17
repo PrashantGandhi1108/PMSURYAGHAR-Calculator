@@ -241,7 +241,7 @@ position:'bottom'
 }
 
 async function downloadPDF(){
-
+doc.setFont("helvetica", "normal");
 const {jsPDF}=window.jspdf;
 let doc=new jsPDF();
 
@@ -258,14 +258,14 @@ doc.text("PM SURYAGHAR MBY: LOAN STATEMENT", 105, 20, null, null, "center");
 // DETAILS
 doc.setFontSize(10);
 let name=document.getElementById('name').value || "NA";
-let loan=document.getElementById('loan').innerText;
-let emi=document.getElementById('emi').innerText;
-let interest=document.getElementById('interest').innerText;
+let loan = document.getElementById('loan').innerText.replace(/,/g,'');
+let emi = document.getElementById('emi').innerText.replace(/,/g,'');
+let interest = document.getElementById('interest').innerText.replace(/,/g,'');
 
 doc.text("Applicant: " + name, 20, 35);
-doc.text("Loan Amount: Rs. " + loan, 20, 42);
-doc.text("EMI: Rs. " + emi, 20, 49);
-doc.text("Total Interest: Rs. " + interest, 20, 56);
+doc.text("Loan Amount: Rs. " + String(loan), 20, 42);
+doc.text("EMI: Rs. " + String(emi), 20, 49);
+doc.text("Total Interest: Rs. " + String(interest), 20, 56);
 
 // TABLE
 let y = 65;
