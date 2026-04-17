@@ -302,15 +302,86 @@ data:{labels:['Principal','Interest'],datasets:[{data:[loan,interest]}]}
 }
 
 function downloadPDF(){
+
 const {jsPDF}=window.jspdf;
 let doc=new jsPDF();
+
 doc.setFont("helvetica","normal");
 
-doc.text("PM SURYAGHAR LOAN STATEMENT",20,20);
-doc.text("Loan: Rs. "+loan.innerText,20,30);
-doc.text("EMI: Rs. "+emi.innerText,20,40);
+// ===== TITLE =====
+doc.setFontSize(14);
+doc.text("PM SURYAGHAR MBY: LOAN STATEMENT", 105, 15, null, null, "center");
 
-doc.save("report.pdf");
+// ===== SUMMARY =====
+doc.setFontSize(10);
+
+let name = document.getElementById('name').value || "NA";
+let loan = document.getElementById('loan').innerText;
+let emi = document.getElementById('emi').innerText;
+let interest = document.getElementById('interest').innerText;
+
+doc.text("Applicant: " + name, 15, 25);
+doc.text("Loan Amount: Rs. " + loan, 15, 32);
+doc.text("EMI: Rs. " + emi, 15, 39);
+doc.text("Total Interest: Rs. " + interest, 15, 46);
+
+// ===== TABLE HEADER FUNCTION =====
+let startY = 55;
+let rowHeight = 6;
+
+function drawHeader(y){
+doc.setFillColor(220,220,220);
+doc.rect(10, y-5, 190, 6, 'F');
+
+doc.text("M", 12, y);
+doc.text("Opening", 30, y);
+doc.text("EMI", 65, y);
+doc.text("Interest", 95, y);
+doc.text("Principal", 125, y);
+doc.text("Closing", 160, y);
+}
+
+drawHeader(startY);
+
+let y = startY + 5;
+
+// ===== TABLE DATA =====
+scheduleData.forEach((row)=>{
+
+// PAGE BREAK
+if(y > 280){
+doc.addPage();
+drawHeader(20);
+y = 25;
+}
+
+// HIGHLIGHT SUBSIDY ROW
+if(row[0] == 3){
+doc.setFillColor(255,243,205);
+doc.rect(10, y-4, 190, rowHeight, 'F');
+}
+
+// BORDER
+doc.rect(10, y-4, 190, rowHeight);
+
+// DATA
+doc.text(String(row[0]), 12, y);
+doc.text(String(Math.round(row[1])), 30, y);
+doc.text(String(Math.round(row[2])), 65, y);
+doc.text(String(Math.round(row[3])), 95, y);
+doc.text(String(Math.round(row[4])), 125, y);
+doc.text(String(Math.round(row[5])), 160, y);
+
+y += rowHeight;
+});
+
+// ===== FOOTER =====
+doc.setFontSize(8);
+doc.text("* This is indicative illustration. Actual may vary.", 15, 290);
+
+// ===== SAVE =====
+doc.save("PM_Suryaghar_Loan_Report.pdf");
+
 }
 
 function exportExcel(){
