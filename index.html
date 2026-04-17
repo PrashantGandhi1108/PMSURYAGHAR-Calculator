@@ -260,10 +260,11 @@ doc.text("PM SURYAGHAR MBY - LOAN STATEMENT",105,15,null,null,"center");
 
 // USER DATA
 doc.setFontSize(10);
-doc.text("Name: "+name.value,15,25);
-doc.text("Loan: Rs. "+loan.innerText,15,32);
-doc.text("EMI: Rs. "+emi.innerText,15,39);
-doc.text("Total Interest: Rs. "+interest.innerText,15,46);
+let applicantName = document.getElementById("name").value || "NA";
+doc.text("Name: " + applicantName, 15, 25);
+doc.text("Loan: Rs. " + loanVal, 15, 32);
+doc.text("EMI: Rs. " + emiVal, 15, 39);
+doc.text("Total Interest: Rs. " + interestVal, 15, 46);
 
 // TABLE HEADER
 let y=55;
