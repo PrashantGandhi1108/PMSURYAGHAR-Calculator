@@ -10,7 +10,7 @@
 
 <style>
 body {
-  font-family: 'Segoe UI', Tahoma, sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   background: linear-gradient(135deg, #e3f2fd, #ffffff);
   margin:0;
 }
@@ -18,7 +18,7 @@ body {
 .container {
   max-width:1100px;
   margin:auto;
-  padding:20px;
+  padding:15px;
 }
 
 .header {
@@ -27,30 +27,26 @@ body {
   align-items:center;
   background:#1565c0;
   color:white;
-  padding:15px;
+  padding:12px;
   border-radius:10px;
-  margin-bottom:20px;
+  margin-bottom:15px;
 }
 
-.logo {
-  height:50px;
-}
+.logo { height:45px; }
 
-.title {
-  text-align:center;
-}
+.title { text-align:center; }
 
 .grid {
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:20px;
+  gap:15px;
 }
 
 .card {
   background:white;
-  padding:25px;
+  padding:20px;
   border-radius:12px;
-  box-shadow:0 8px 25px rgba(0,0,0,0.1);
+  box-shadow:0 6px 20px rgba(0,0,0,0.1);
 }
 
 .form-group {
@@ -83,12 +79,12 @@ button {
 .metric {
   display:flex;
   justify-content:space-between;
-  padding:10px 0;
+  padding:8px 0;
   border-bottom:1px solid #ddd;
 }
 
 .chart-box {
-  max-width:300px;
+  max-width:280px;
   margin:20px auto;
 }
 
@@ -96,11 +92,12 @@ table {
   width:100%;
   border-collapse:collapse;
   margin-top:15px;
+  font-size:12px;
 }
 
 th, td {
   border:1px solid #ccc;
-  padding:8px;
+  padding:6px;
   text-align:center;
 }
 
@@ -108,19 +105,38 @@ th {
   background:#1565c0;
   color:white;
 }
-</style>
 
+/* ✅ MOBILE RESPONSIVE */
+@media(max-width:768px){
+  .grid {
+    grid-template-columns:1fr;
+  }
+
+  .header {
+    flex-direction:column;
+    text-align:center;
+    gap:10px;
+  }
+
+  .logo {
+    height:40px;
+  }
+
+  .chart-box {
+    max-width:220px;
+  }
+}
+</style>
 </head>
 
 <body>
 
 <div class="container">
 
-<!-- HEADER -->
 <div class="header">
   <img src="dgvcl_logo.png" class="logo">
   <div class="title">
-    <h2>PM SURYAGHAR MBY</h2>
+    <h3>PM SURYAGHAR MBY</h3>
     <p>Loan EMI Calculator</p>
   </div>
   <img src="dgvcl_logo.png" class="logo">
@@ -128,33 +144,31 @@ th {
 
 <div class="grid">
 
-<!-- INPUT CARD -->
 <div class="card">
-
 <h3>Applicant Details</h3>
 
 <div class="form-group">
-<label>Applicant Name</label>
+<label>Name</label>
 <input id="name">
 </div>
 
 <div class="form-group">
-<label>Solar Capacity (kW)</label>
+<label>Capacity (kW)</label>
 <input id="capacity" oninput="autoSubsidy()">
 </div>
 
 <div class="form-group">
-<label>Total Cost (₹)</label>
+<label>Cost (₹)</label>
 <input id="cost">
 </div>
 
 <div class="form-group">
-<label>Subsidy (₹)</label>
+<label>Subsidy</label>
 <input id="subsidy" readonly>
 </div>
 
 <div class="form-group">
-<label>Interest Rate (%)</label>
+<label>Interest (%)</label>
 <input id="rate">
 </div>
 
@@ -164,17 +178,14 @@ th {
 </div>
 
 <button onclick="calculate()">Calculate</button>
-
 </div>
 
-<!-- SUMMARY -->
 <div class="card">
-
-<h3>Financial Summary</h3>
+<h3>Summary</h3>
 
 <div class="metric"><span>Loan</span><b>₹ <span id="loan"></span></b></div>
 <div class="metric"><span>EMI</span><b>₹ <span id="emi"></span></b></div>
-<div class="metric"><span>Total Interest</span><b>₹ <span id="interest"></span></b></div>
+<div class="metric"><span>Interest</span><b>₹ <span id="interest"></span></b></div>
 
 <div class="chart-box">
 <canvas id="chart"></canvas>
@@ -184,7 +195,6 @@ th {
 
 </div>
 
-<!-- TABLE -->
 <div class="card">
 <h3>EMI Schedule</h3>
 
@@ -210,9 +220,9 @@ th {
 let scheduleData=[];
 
 function autoSubsidy(){
-let cap=+document.getElementById('capacity').value||0;
-let sub=cap<=2?cap*30000:cap<=3?60000+(cap-2)*18000:78000;
-document.getElementById('subsidy').value=sub;
+let cap = +document.getElementById('capacity').value || 0;
+let sub = cap<=2 ? cap*30000 : cap<=3 ? 60000+(cap-2)*18000 : 78000;
+document.getElementById('subsidy').value = sub;
 }
 
 function emiCalc(P,r,n){
@@ -221,15 +231,20 @@ return P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);
 
 function calculate(){
 
-let cost=+cost.value;
-let sub=+subsidy.value;
-let r=(+rate.value)/12/100;
-let n=(+tenure.value)*12;
+let costVal = +document.getElementById('cost').value;
+let sub = +document.getElementById('subsidy').value;
+let r = (+document.getElementById('rate').value)/12/100;
+let n = (+document.getElementById('tenure').value)*12;
 
-let emiBefore=emiCalc(cost,r,n);
+if(!costVal || !r || !n){
+  alert("Please fill all fields correctly");
+  return;
+}
 
-let balance=cost;
-let emiAfter=emiBefore;
+let emiBefore = emiCalc(costVal,r,n);
+
+let balance = costVal;
+let emiAfter = emiBefore;
 
 scheduleData=[];
 let table="";
@@ -237,15 +252,15 @@ let table="";
 for(let i=1;i<=n;i++){
 
 if(i==3){
-balance-=sub;
-emiAfter=emiCalc(balance,r,n-2);
+balance -= sub;
+emiAfter = emiCalc(balance,r,n-2);
 }
 
-let emi=i<=2?emiBefore:emiAfter;
+let emi = i<=2 ? emiBefore : emiAfter;
 
-let interest=balance*r;
-let principal=emi-interest;
-let closing=balance-principal;
+let interest = balance*r;
+let principal = emi-interest;
+let closing = balance-principal;
 
 if(i===n){
 principal=balance;
@@ -267,25 +282,26 @@ table+=`<tr ${i==3?"style='background:#fff3cd'":""}>
 balance=closing;
 }
 
-loan.innerText=Math.round(cost);
-emi.innerText=Math.round(emiAfter);
-interest.innerText=Math.round(scheduleData.reduce((a,b)=>a+b[3],0));
+document.getElementById('loan').innerText=Math.round(costVal);
+document.getElementById('emi').innerText=Math.round(emiAfter);
+document.getElementById('interest').innerText=Math.round(scheduleData.reduce((a,b)=>a+b[3],0));
 
-drawChart(cost);
+drawChart(costVal);
+document.getElementById('table').innerHTML=table;
 }
 
 function drawChart(loan){
-let interest=scheduleData.reduce((a,b)=>a+b[3],0);
+let interest = scheduleData.reduce((a,b)=>a+b[3],0);
 
-if(window.chartObj){chartObj.destroy();}
+if(window.chartObj){ chartObj.destroy(); }
 
-chartObj=new Chart(document.getElementById('chart'),{
+window.chartObj = new Chart(document.getElementById('chart'),{
 type:'pie',
 data:{labels:['Principal','Interest'],datasets:[{data:[loan,interest]}]}
 });
 }
 
-async function downloadPDF(){
+function downloadPDF(){
 const {jsPDF}=window.jspdf;
 let doc=new jsPDF();
 doc.setFont("helvetica","normal");
