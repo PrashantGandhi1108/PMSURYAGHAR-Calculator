@@ -8,8 +8,9 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
+<style>
 body {
-  font-family: 'Segoe UI', Tahoma, sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   background: linear-gradient(135deg, #e3f2fd, #ffffff);
   margin:0;
 }
@@ -20,43 +21,72 @@ body {
   padding:20px;
 }
 
+.header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:#1565c0;
+  color:white;
+  padding:15px;
+  border-radius:10px;
+  margin-bottom:20px;
+}
+
+.logo { height:50px; }
+
+.title { text-align:center; }
+
+.grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+}
+
 .card {
   background:white;
-  padding:25px;
+  padding:20px;
   border-radius:12px;
-  box-shadow:0 8px 25px rgba(0,0,0,0.1);
+  box-shadow:0 6px 20px rgba(0,0,0,0.1);
 }
 
 input {
   width:100%;
   padding:10px;
-  margin:6px 0 12px 0;
+  margin-bottom:10px;
   border-radius:6px;
   border:1px solid #ccc;
 }
 
 button {
-  padding:12px 20px;
+  width:100%;
+  padding:12px;
   background:linear-gradient(45deg,#1565c0,#42a5f5);
   color:white;
   border:none;
   border-radius:6px;
   cursor:pointer;
-  transition:0.3s;
 }
 
-button:hover {
-  transform:scale(1.05);
+.metric {
+  display:flex;
+  justify-content:space-between;
+  padding:8px;
+}
+
+.metric b { color:#0d47a1; }
+
+.chart-box {
+  max-width:300px;
+  margin:20px auto;
 }
 
 table {
   width:100%;
   border-collapse:collapse;
   margin-top:15px;
-  font-size:13px;
 }
 
-th,td {
+th, td {
   border:1px solid #ccc;
   padding:8px;
   text-align:center;
@@ -66,62 +96,66 @@ th {
   background:#1565c0;
   color:white;
 }
-
-.links a {
-  text-decoration:none;
-  color:#1565c0;
-  font-weight:bold;
-}</head>
+</style>
+</head>
 
 <body>
+
 <div class="container">
 
-<!-- HEADER -->
-<div style="display:flex; align-items:center; justify-content:space-between; border-bottom:2px solid #1565c0; padding-bottom:10px; margin-bottom:15px;">
-  <img src="dgvcl_logo.png" style="height:90px;">
-  <div style="text-align:center;">
-    <h2 style="margin:0; color:#0d47a1;">PM SURYAGHAR MBY</h2>
-    <h3 style="margin:0;">Loan EMI Calculator</h3>
+<div class="header">
+  <img src="dgvcl_logo.png" class="logo">
+  <div class="title">
+    <h2>PM SURYAGHAR MBY</h2>
+    <p>Loan EMI Calculator</p>
   </div>
-  <img src="dgvcl_logo.png" style="height:90px;">
+  <img src="dgvcl_logo.png" class="logo">
 </div>
 
-<div class="links">
-<a href="https://www.jansamarth.in/home" target="_blank">Apply Loan</a> |
-<a href="https://consumer.pmsuryaghar.gov.in/consumer/#/login" target="_blank">PM SuryaGhar Portal</a>
-</div>
+<div class="grid">
 
 <div class="card">
+<h3>Inputs</h3>
 
-<label>Applicant Name</label>
+<label>Name</label>
 <input id="name">
 
-<label>Solar Capacity (kW)</label>
+<label>Capacity (kW)</label>
 <input id="capacity" oninput="autoSubsidy()">
 
-<label>Total Project Cost (₹)</label>
+<label>Cost (₹)</label>
 <input id="cost">
 
-<label>Subsidy (₹)</label>
+<label>Subsidy</label>
 <input id="subsidy" readonly>
 
-<label>Interest Rate (%)</label>
+<label>Interest (%)</label>
 <input id="rate">
 
 <label>Tenure (Years)</label>
 <input id="tenure">
 
 <button onclick="calculate()">Calculate</button>
-
-<p><b>Loan:</b> ₹ <span id="loan"></span></p>
-<p><b>Revised EMI:</b> ₹ <span id="emi"></span></p>
-<p><b>Total Interest:</b> ₹ <span id="interest"></span></p>
-
-<div style="max-width:350px; margin:20px auto;">
-  <canvas id="chart"></canvas>
 </div>
 
+<div class="card">
+<h3>Summary</h3>
+
+<div class="metric"><span>Loan</span><b>₹ <span id="loan"></span></b></div>
+<div class="metric"><span>EMI</span><b>₹ <span id="emi"></span></b></div>
+<div class="metric"><span>Interest</span><b>₹ <span id="interest"></span></b></div>
+
+<div class="chart-box">
+<canvas id="chart"></canvas>
+</div>
+
+</div>
+
+</div>
+
+<div class="card">
 <h3>EMI Schedule</h3>
+
 <table>
 <thead>
 <tr>
@@ -132,8 +166,11 @@ th {
 </table>
 
 <button onclick="downloadPDF()">Download PDF</button>
+<button onclick="window.print()">Print</button>
+<button onclick="exportExcel()">Export Excel</button>
 
 </div>
+
 </div>
 
 <script>
@@ -141,14 +178,9 @@ th {
 let scheduleData=[];
 
 function autoSubsidy(){
-let cap = parseFloat(document.getElementById('capacity').value)||0;
-let sub=0;
-
-if(cap<=2) sub=cap*30000;
-else if(cap<=3) sub=60000+(cap-2)*18000;
-else sub=78000;
-
-document.getElementById('subsidy').value=sub;
+let cap=+capacity.value||0;
+let sub=cap<=2?cap*30000:cap<=3?60000+(cap-2)*18000:78000;
+subsidy.value=sub;
 }
 
 function emiCalc(P,r,n){
@@ -157,10 +189,10 @@ return P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);
 
 function calculate(){
 
-let cost=+document.getElementById('cost').value;
-let sub=+document.getElementById('subsidy').value;
-let r=(+document.getElementById('rate').value)/12/100;
-let n=(+document.getElementById('tenure').value)*12;
+let cost=+cost.value;
+let sub=+subsidy.value;
+let r=(+rate.value)/12/100;
+let n=(+tenure.value)*12;
 
 let emiBefore=emiCalc(cost,r,n);
 
@@ -173,17 +205,16 @@ let table="";
 for(let i=1;i<=n;i++){
 
 if(i==3){
-balance -= sub;
-emiAfter = emiCalc(balance, r, n-2);
+balance-=sub;
+emiAfter=emiCalc(balance,r,n-2);
 }
 
-let emi=(i<=2)?emiBefore:emiAfter;
+let emi=i<=2?emiBefore:emiAfter;
 
 let interest=balance*r;
 let principal=emi-interest;
 let closing=balance-principal;
 
-// final month correction
 if(i===n){
 principal=balance;
 emi=interest+principal;
@@ -192,141 +223,64 @@ closing=0;
 
 scheduleData.push([i,balance,emi,interest,principal,closing]);
 
-let highlight = (i==3) ? "style='background:#fff3cd; font-weight:bold;'" : "";
-
-table+=`<tr ${highlight}>
+table+=`<tr ${i==3?"style='background:#fff3cd'":""}>
 <td>${i}</td>
-<td>${Math.round(balance).toLocaleString()}</td>
-<td>${Math.round(emi).toLocaleString()}</td>
-<td>${Math.round(interest).toLocaleString()}</td>
-<td>${Math.round(principal).toLocaleString()}</td>
-<td>${Math.round(closing).toLocaleString()}</td>
+<td>${Math.round(balance)}</td>
+<td>${Math.round(emi)}</td>
+<td>${Math.round(interest)}</td>
+<td>${Math.round(principal)}</td>
+<td>${Math.round(closing)}</td>
 </tr>`;
 
 balance=closing;
 }
 
-document.getElementById('loan').innerText=Math.round(cost).toLocaleString();
-document.getElementById('emi').innerText=Math.round(emiAfter).toLocaleString();
-document.getElementById('interest').innerText=
-Math.round(scheduleData.reduce((a,b)=>a+b[3],0)).toLocaleString();
-
-document.getElementById('table').innerHTML=table;
+loan.innerText=Math.round(cost);
+emi.innerText=Math.round(emiAfter);
+interest.innerText=Math.round(scheduleData.reduce((a,b)=>a+b[3],0));
 
 drawChart(cost);
 }
 
 function drawChart(loan){
-
 let interest=scheduleData.reduce((a,b)=>a+b[3],0);
 
-new Chart(document.getElementById('chart'),{
+if(window.chartObj){chartObj.destroy();}
+
+chartObj=new Chart(chart,{
 type:'pie',
-data:{
-labels:['Principal','Interest'],
-datasets:[{
-data:[loan,interest]
-}]
-},
-options:{
-responsive:true,
-maintainAspectRatio:true,
-plugins:{
-legend:{
-position:'bottom'
-}
-}
-}
+data:{labels:['Principal','Interest'],datasets:[{data:[loan,interest]}]}
 });
 }
 
 async function downloadPDF(){
-doc.setFont("helvetica", "normal");
+
 const {jsPDF}=window.jspdf;
 let doc=new jsPDF();
+doc.setFont("helvetica","normal");
 
-// LOGO
-let img = new Image();
-img.src = "dgvcl_logo.png";
-doc.addImage(img, 'PNG', 10, 10, 30, 15);
-doc.addImage(img, 'PNG', 170, 10, 30, 15);
+let l=loan.innerText;
+let e=emi.innerText;
 
-// TITLE
-doc.setFontSize(14);
-doc.text("PM SURYAGHAR MBY: LOAN STATEMENT", 105, 20, null, null, "center");
+doc.text("PM SURYAGHAR LOAN STATEMENT",20,20);
+doc.text("Loan: Rs. "+l,20,30);
+doc.text("EMI: Rs. "+e,20,40);
 
-// DETAILS
-doc.setFontSize(10);
-let name=document.getElementById('name').value || "NA";
-let loan = document.getElementById('loan').innerText.replace(/,/g,'');
-let emi = document.getElementById('emi').innerText.replace(/,/g,'');
-let interest = document.getElementById('interest').innerText.replace(/,/g,'');
-
-doc.text("Applicant: " + name, 20, 35);
-doc.text("Loan Amount: Rs. " + String(loan), 20, 42);
-doc.text("EMI: Rs. " + String(emi), 20, 49);
-doc.text("Total Interest: Rs. " + String(interest), 20, 56);
-
-// TABLE
-let y = 65;
-let rowHeight = 6;
-let colX = [10, 30, 60, 90, 120, 150];
-
-function header(y){
-doc.setFillColor(200,200,200);
-doc.rect(10, y-5, 190, 6, 'F');
-
-doc.text("M", colX[0], y);
-doc.text("Opening", colX[1], y);
-doc.text("EMI", colX[2], y);
-doc.text("Interest", colX[3], y);
-doc.text("Principal", colX[4], y);
-doc.text("Closing", colX[5], y);
+doc.save("report.pdf");
 }
 
-header(y);
-y+=5;
+function exportExcel(){
+let csv="Month,Opening,EMI,Interest,Principal,Closing\n";
 
-scheduleData.forEach((row)=>{
-
-if(y>280){
-doc.addPage();
-header(20);
-y=25;
-}
-
-// highlight subsidy row
-if(row[0]==3){
-doc.setFillColor(255,243,205);
-doc.rect(10,y-4,190,rowHeight,'F');
-}
-
-doc.rect(10,y-4,190,rowHeight);
-
-doc.text(String(row[0]), colX[0], y);
-doc.text(String(Math.round(row[1])), colX[1], y);
-doc.text(String(Math.round(row[2])), colX[2], y);
-doc.text(String(Math.round(row[3])), colX[3], y);
-doc.text(String(Math.round(row[4])), colX[4], y);
-doc.text(String(Math.round(row[5])), colX[5], y);
-
-y+=rowHeight;
+scheduleData.forEach(r=>{
+csv+=r.join(",")+"\n";
 });
 
-// CHART
-let canvas=document.getElementById('chart');
-let imgData=canvas.toDataURL("image/png");
-
-doc.addPage();
-doc.text("Loan Composition", 20, 20);
-doc.addImage(imgData,'PNG',20,30,160,100);
-
-// DISCLAIMER
-doc.addPage();
-doc.setFontSize(9);
-doc.text("* This is indicative illustration. Actual may vary based on inputs and bank terms.",20,20);
-
-doc.save("PM_Suryaghar_Loan_Report.pdf");
+let blob=new Blob([csv],{type:"text/csv"});
+let a=document.createElement("a");
+a.href=URL.createObjectURL(blob);
+a.download="emi_schedule.csv";
+a.click();
 }
 
 </script>
