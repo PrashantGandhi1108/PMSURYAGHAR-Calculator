@@ -49,7 +49,7 @@ body {
 
 .form-group { margin-bottom:12px; }
 
-label { font-weight:bold; display:block; }
+label { font-weight:bold; }
 
 input {
   width:100%;
@@ -61,6 +61,7 @@ input {
 button {
   width:100%;
   padding:12px;
+  margin-top:8px;
   background:linear-gradient(45deg,#1565c0,#42a5f5);
   color:white;
   border:none;
@@ -76,7 +77,7 @@ button {
 }
 
 .chart-box {
-  max-width:280px;
+  max-width:260px;
   margin:20px auto;
 }
 
@@ -98,7 +99,6 @@ th {
   color:white;
 }
 
-/* Mobile */
 @media(max-width:768px){
   .grid { grid-template-columns:1fr; }
 }
@@ -121,7 +121,7 @@ th {
 <h3>Inputs</h3>
 
 <div class="form-group"><label>Name</label><input id="name"></div>
-<div class="form-group"><label>Capacity</label><input id="capacity" oninput="autoSubsidy()"></div>
+<div class="form-group"><label>Capacity (kW)</label><input id="capacity" oninput="autoSubsidy()"></div>
 <div class="form-group"><label>Cost</label><input id="cost"></div>
 <div class="form-group"><label>Subsidy</label><input id="subsidy" readonly></div>
 <div class="form-group"><label>Interest %</label><input id="rate"></div>
@@ -143,6 +143,7 @@ th {
 
 <div class="card">
 <h3>EMI Schedule</h3>
+
 <table>
 <thead>
 <tr>
@@ -153,17 +154,20 @@ th {
 </table>
 
 <button onclick="downloadPDF()">Download PDF</button>
+<button onclick="window.print()">Print</button>
+<button onclick="exportExcel()">Export Excel</button>
+
 </div>
 
 </div>
 
 <script>
 
-let scheduleData = [];
+let scheduleData=[];
 
 function autoSubsidy(){
-let cap = +capacity.value || 0;
-subsidy.value = cap<=2 ? cap*30000 : cap<=3 ? 60000+(cap-2)*18000 : 78000;
+let cap=+capacity.value||0;
+subsidy.value=cap<=2?cap*30000:cap<=3?60000+(cap-2)*18000:78000;
 }
 
 function emiCalc(P,r,n){
@@ -172,30 +176,31 @@ return P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);
 
 function calculate(){
 
-let costVal = +cost.value;
-let sub = +subsidy.value;
-let r = (+rate.value)/12/100;
-let n = (+tenure.value)*12;
+let costVal=+cost.value;
+let sub=+subsidy.value;
+let r=(+rate.value)/12/100;
+let n=(+tenure.value)*12;
 
-let emiBefore = emiCalc(costVal,r,n);
+let emiBefore=emiCalc(costVal,r,n);
 
-let balance = costVal;
-let emiAfter = emiBefore;
+let balance=costVal;
+let emiAfter=emiBefore;
 
-scheduleData = [];
-let table = "";
+scheduleData=[];
+let table="";
 
 for(let i=1;i<=n;i++){
 
 if(i==3){
-balance -= sub;
-emiAfter = emiCalc(balance,r,n-2);
+balance-=sub;
+emiAfter=emiCalc(balance,r,n-2);
 }
 
-let emi = i<=2 ? emiBefore : emiAfter;
-let interest = balance*r;
-let principal = emi-interest;
-let closing = balance-principal;
+let emi=i<=2?emiBefore:emiAfter;
+
+let interest=balance*r;
+let principal=emi-interest;
+let closing=balance-principal;
 
 if(i===n){
 principal=balance;
@@ -217,29 +222,29 @@ table+=`<tr>
 balance=closing;
 }
 
-loan.innerText = Math.round(costVal);
-emi.innerText = Math.round(emiAfter);
-interest.innerText = Math.round(scheduleData.reduce((a,b)=>a+b[3],0));
+loan.innerText=Math.round(costVal);
+emi.innerText=Math.round(emiAfter);
+interest.innerText=Math.round(scheduleData.reduce((a,b)=>a+b[3],0));
 
-document.getElementById("table").innerHTML = table;
+document.getElementById("table").innerHTML=table;
 
 drawChart(costVal);
 }
 
 function drawChart(loanVal){
-let interestVal = scheduleData.reduce((a,b)=>a+b[3],0);
-
+let interestVal=scheduleData.reduce((a,b)=>a+b[3],0);
 if(window.chartObj) chartObj.destroy();
 
-chartObj = new Chart(chart,{
+chartObj=new Chart(chart,{
 type:'pie',
 data:{labels:['Principal','Interest'],datasets:[{data:[loanVal,interestVal]}]}
 });
 }
 
+/* ✅ PREMIUM PDF */
 function downloadPDF(){
 
-if(scheduleData.length === 0){
+if(scheduleData.length===0){
 alert("Please calculate first");
 return;
 }
@@ -248,42 +253,65 @@ const {jsPDF}=window.jspdf;
 let doc=new jsPDF();
 
 doc.setFont("helvetica","normal");
-doc.setFontSize(12);
 
-doc.text("PM SURYAGHAR LOAN STATEMENT", 70, 15);
+// HEADER
+doc.setFontSize(14);
+doc.text("PM SURYAGHAR MBY - LOAN STATEMENT",105,15,null,null,"center");
 
-let y = 25;
+// USER DATA
+doc.setFontSize(10);
+doc.text("Name: "+name.value,15,25);
+doc.text("Loan: Rs. "+loan.innerText,15,32);
+doc.text("EMI: Rs. "+emi.innerText,15,39);
+doc.text("Total Interest: Rs. "+interest.innerText,15,46);
 
-// Header Row
-doc.setFontSize(8);
-doc.text("M",10,y);
-doc.text("Opening",25,y);
-doc.text("EMI",55,y);
-doc.text("Interest",80,y);
-doc.text("Principal",110,y);
-doc.text("Closing",140,y);
+// TABLE HEADER
+let y=55;
+doc.setFillColor(220,220,220);
+doc.rect(10,y-5,190,6,'F');
+
+doc.text("M",12,y);
+doc.text("Opening",30,y);
+doc.text("EMI",65,y);
+doc.text("Interest",95,y);
+doc.text("Principal",125,y);
+doc.text("Closing",160,y);
 
 y+=5;
 
-// Data
-scheduleData.forEach((r)=>{
+// TABLE DATA
+scheduleData.forEach(row=>{
 
 if(y>280){
 doc.addPage();
 y=20;
 }
 
-doc.text(String(r[0]),10,y);
-doc.text(String(Math.round(r[1])),25,y);
-doc.text(String(Math.round(r[2])),55,y);
-doc.text(String(Math.round(r[3])),80,y);
-doc.text(String(Math.round(r[4])),110,y);
-doc.text(String(Math.round(r[5])),140,y);
+doc.rect(10,y-4,190,6);
 
-y+=5;
+doc.text(String(row[0]),12,y);
+doc.text(String(Math.round(row[1])),30,y);
+doc.text(String(Math.round(row[2])),65,y);
+doc.text(String(Math.round(row[3])),95,y);
+doc.text(String(Math.round(row[4])),125,y);
+doc.text(String(Math.round(row[5])),160,y);
+
+y+=6;
 });
 
 doc.save("Loan_Statement.pdf");
+}
+
+/* ✅ EXCEL */
+function exportExcel(){
+let csv="Month,Opening,EMI,Interest,Principal,Closing\n";
+scheduleData.forEach(r=>csv+=r.join(",")+"\n");
+
+let blob=new Blob([csv],{type:"text/csv"});
+let a=document.createElement("a");
+a.href=URL.createObjectURL(blob);
+a.download="EMI_Schedule.csv";
+a.click();
 }
 
 </script>
