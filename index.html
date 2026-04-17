@@ -8,18 +8,70 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-<style>
-body {font-family: Arial; background:#eef5ff;}
-.container {max-width:1100px;margin:auto;padding:20px;}
-.card {background:#fff;padding:20px;border-radius:10px;}
-input {width:100%;padding:8px;margin:5px 0;}
-button {padding:10px;background:#1565c0;color:#fff;border:none;}
-table {width:100%;border-collapse:collapse;margin-top:15px;}
-th,td {border:1px solid #ccc;padding:6px;font-size:12px;text-align:center;}
-th {background:#e3f2fd;}
-.links {text-align:center;margin:10px;}
-</style>
-</head>
+body {
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  background: linear-gradient(135deg, #e3f2fd, #ffffff);
+  margin:0;
+}
+
+.container {
+  max-width:1100px;
+  margin:auto;
+  padding:20px;
+}
+
+.card {
+  background:white;
+  padding:25px;
+  border-radius:12px;
+  box-shadow:0 8px 25px rgba(0,0,0,0.1);
+}
+
+input {
+  width:100%;
+  padding:10px;
+  margin:6px 0 12px 0;
+  border-radius:6px;
+  border:1px solid #ccc;
+}
+
+button {
+  padding:12px 20px;
+  background:linear-gradient(45deg,#1565c0,#42a5f5);
+  color:white;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+button:hover {
+  transform:scale(1.05);
+}
+
+table {
+  width:100%;
+  border-collapse:collapse;
+  margin-top:15px;
+  font-size:13px;
+}
+
+th,td {
+  border:1px solid #ccc;
+  padding:8px;
+  text-align:center;
+}
+
+th {
+  background:#1565c0;
+  color:white;
+}
+
+.links a {
+  text-decoration:none;
+  color:#1565c0;
+  font-weight:bold;
+}</head>
 
 <body>
 <div class="container">
@@ -61,11 +113,13 @@ th {background:#e3f2fd;}
 
 <button onclick="calculate()">Calculate</button>
 
-<p><b>Loan:</b> ₹<span id="loan"></span></p>
-<p><b>Revised EMI:</b> ₹<span id="emi"></span></p>
-<p><b>Total Interest:</b> ₹<span id="interest"></span></p>
+<p><b>Loan:</b> ₹ <span id="loan"></span></p>
+<p><b>Revised EMI:</b> ₹ <span id="emi"></span></p>
+<p><b>Total Interest:</b> ₹ <span id="interest"></span></p>
 
-<canvas id="chart"></canvas>
+<div style="max-width:350px; margin:20px auto;">
+  <canvas id="chart"></canvas>
+</div>
 
 <h3>EMI Schedule</h3>
 <table>
@@ -163,13 +217,25 @@ drawChart(cost);
 }
 
 function drawChart(loan){
+
 let interest=scheduleData.reduce((a,b)=>a+b[3],0);
 
 new Chart(document.getElementById('chart'),{
 type:'pie',
 data:{
 labels:['Principal','Interest'],
-datasets:[{data:[loan,interest]}]
+datasets:[{
+data:[loan,interest]
+}]
+},
+options:{
+responsive:true,
+maintainAspectRatio:true,
+plugins:{
+legend:{
+position:'bottom'
+}
+}
 }
 });
 }
@@ -197,9 +263,9 @@ let emi=document.getElementById('emi').innerText;
 let interest=document.getElementById('interest').innerText;
 
 doc.text("Applicant: " + name, 20, 35);
-doc.text("Loan Amount: ₹" + loan, 20, 42);
-doc.text("EMI: ₹" + emi, 20, 49);
-doc.text("Total Interest: ₹" + interest, 20, 56);
+doc.text("Loan Amount: Rs. " + loan, 20, 42);
+doc.text("EMI: Rs. " + emi, 20, 49);
+doc.text("Total Interest: Rs. " + interest, 20, 56);
 
 // TABLE
 let y = 65;
